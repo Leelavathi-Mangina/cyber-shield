@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const connectDB = require("./config/db");
 const Analysis = require("./models/Analysis");
+const ThreatReport = require("./models/ThreatReport");
 
 const { analyzeContent } = require("./services/riskEngine");
 const { fetchRdapDomainData } = require("./services/domainIntelligence");
@@ -190,6 +191,50 @@ app.get("/api/analyses", async (req, res) => {
       success: false,
       message: "Unable to retrieve analysis history.",
       error: error.message,
+    });
+  }
+});
+
+app.post("/api/reports", async (req, res) => {
+  try {
+    const { content, threatType, description } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Suspicious content is required.",
+      });
+    }
+
+    if (!threatType) {
+      return res.status(400).json({
+        success: false,
+        message: "Threat type is required.",
+      });
+    }
+
+    const report = await ThreatReport.create({
+      content: content.trim(),
+      threatType,
+      description: description?.trim() || "",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Threat reported successfully.",
+      report: {
+        id: report._id,
+        threatType: report.threatType,
+        status: report.status,
+        createdAt: report.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Threat reporting error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to submit threat report.",
     });
   }
 });

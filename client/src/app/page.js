@@ -17,6 +17,12 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  const [reportContent, setReportContent] = useState("");
+  const [reportType, setReportType] = useState("phishing");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportMessage, setReportMessage] = useState("");
+
   async function handleAnalyze(e) {
     e.preventDefault();
 
@@ -107,6 +113,52 @@ export default function Home() {
       console.error("History error:", error.message);
     } finally {
       setHistoryLoading(false);
+    }
+  }
+
+  async function handleThreatReport(event) {
+    event.preventDefault();
+
+    if (!reportContent.trim()) {
+      setReportMessage("Please enter the suspicious content.");
+      return;
+    }
+
+    try {
+      setReportLoading(true);
+      setReportMessage("");
+
+      const response = await fetch("http://localhost:5000/api/reports", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          content: reportContent,
+          threatType: reportType,
+          description: reportDescription,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to submit report.");
+      }
+
+      setReportMessage(
+        `Threat reported successfully. Report ID: ${data.report.id}`,
+      );
+
+      setReportContent("");
+      setReportDescription("");
+      setReportType("phishing");
+    } catch (error) {
+      setReportMessage(error.message);
+    } finally {
+      setReportLoading(false);
     }
   }
 
@@ -382,6 +434,85 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Report a Threat</h2>
+
+          <p className="mt-2 text-slate-400">
+            Report suspicious digital content for review and threat tracking.
+          </p>
+        </div>
+
+        <form onSubmit={handleThreatReport} className="space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Threat Type
+            </label>
+
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3"
+            >
+              <option value="phishing">Phishing</option>
+
+              <option value="scam">Scam Message</option>
+
+              <option value="fake-website">Fake Website</option>
+
+              <option value="qr-scam">QR Scam</option>
+
+              <option value="impersonation">Brand Impersonation</option>
+
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Suspicious Content
+            </label>
+
+            <textarea
+              value={reportContent}
+              onChange={(e) => setReportContent(e.target.value)}
+              placeholder="Paste suspicious URL, message, email, or QR-decoded content..."
+              rows={4}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Additional Information
+            </label>
+
+            <textarea
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+              placeholder="Why do you believe this is suspicious? (optional)"
+              rows={3}
+              className="w-full rounded-lg border border-slate-700 bg-slate-800 p-3"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={reportLoading}
+            className="rounded-lg bg-cyan-600 px-5 py-3 font-semibold hover:bg-cyan-500 disabled:opacity-60"
+          >
+            {reportLoading ? "Submitting..." : "Report Threat"}
+          </button>
+        </form>
+
+        {reportMessage && (
+          <div className="mt-4 rounded-lg bg-slate-800 p-3 text-sm">
+            {reportMessage}
+          </div>
+        )}
+      </section>
+
       <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
