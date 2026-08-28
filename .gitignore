@@ -1,0 +1,14 @@
+# Dependencies
+client/node_modules/
+server/node_modules/
+
+# Next.js
+client/.next/
+client/out/
+
+# Environment variables
+client/.env.local
+server/.env
+
+# Misc
+.DS_Store
