@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const connectDB = require("./config/db");
+const Analysis = require("./models/Analysis");
 
 const { analyzeContent } = require("./services/riskEngine");
 const { fetchRdapDomainData } = require("./services/domainIntelligence");
@@ -9,6 +11,8 @@ const { checkUrlReputation } = require("./services/threatReputation");
 const qrRoutes = require("./routes/qrRoutes");
 
 const app = express();
+
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -133,12 +137,32 @@ app.post("/api/analyze", async (req, res) => {
       }
     }
 
+    let savedAnalysis = null;
+
+    try {
+      savedAnalysis = await Analysis.create({
+        inputType,
+        inputContent: content.trim(),
+        riskScore: result.riskScore,
+        riskLevel: result.riskLevel,
+        detectedSignals: result.detectedSignals,
+        recommendations: result.recommendations,
+        evidence: result.evidence,
+        domainIntelligence,
+        threatReputation,
+      });
+    } catch (error) {
+      console.error("Unable to save analysis:", error.message);
+    }
+
     return res.status(200).json({
       success: true,
+
       result: {
         ...result,
         domainIntelligence,
         threatReputation,
+        analysisId: savedAnalysis?._id || null,
       },
     });
   } catch (error) {
@@ -147,6 +171,25 @@ app.post("/api/analyze", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to analyze content.",
+    });
+  }
+});
+
+app.get("/api/analyses", async (req, res) => {
+  try {
+    const analyses = await Analysis.find().sort({ createdAt: -1 }).limit(20);
+
+    return res.status(200).json({
+      success: true,
+      analyses,
+    });
+  } catch (error) {
+    console.error("History fetch error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve analysis history.",
+      error: error.message,
     });
   }
 });

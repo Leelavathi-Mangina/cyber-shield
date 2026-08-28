@@ -14,6 +14,9 @@ export default function Home() {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
 
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   async function handleAnalyze(e) {
     e.preventDefault();
 
@@ -84,6 +87,26 @@ export default function Home() {
       setQrError(error.message || "Unable to analyze QR code.");
     } finally {
       setQrLoading(false);
+    }
+  }
+
+  async function loadHistory() {
+    try {
+      setHistoryLoading(true);
+
+      const response = await fetch("http://localhost:5000/api/analyses");
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to load history.");
+      }
+
+      setHistory(data.analyses || []);
+    } catch (error) {
+      console.error("History error:", error.message);
+    } finally {
+      setHistoryLoading(false);
     }
   }
 
@@ -356,6 +379,50 @@ export default function Home() {
                 ))}
               </ul>
             </div>
+          </div>
+        )}
+      </section>
+      <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold">Recent Analyses</h2>
+
+            <p className="mt-1 text-slate-400">
+              Review recently analyzed suspicious content.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={loadHistory}
+            disabled={historyLoading}
+            className="rounded-lg border border-slate-700 px-4 py-2 font-medium hover:border-cyan-500 disabled:opacity-60"
+          >
+            {historyLoading ? "Loading..." : "Load History"}
+          </button>
+        </div>
+
+        {history.length > 0 && (
+          <div className="mt-5 space-y-3">
+            {history.map((item) => (
+              <div key={item._id} className="rounded-lg bg-slate-800 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-semibold uppercase">{item.inputType}</p>
+
+                  <p className="text-sm font-semibold uppercase">
+                    {item.riskLevel} — {item.riskScore}/100
+                  </p>
+                </div>
+
+                <p className="mt-3 break-all text-sm text-slate-300">
+                  {item.inputContent}
+                </p>
+
+                <p className="mt-3 text-xs text-slate-500">
+                  {new Date(item.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </section>
