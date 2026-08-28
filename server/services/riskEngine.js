@@ -124,6 +124,65 @@ function analyzeContent(content, inputType = "message") {
     "free gift",
     "congratulations you won",
   ];
+  const prizeIndicators = [
+    "prize",
+    "reward",
+    "winner",
+    "won",
+    "lottery",
+    "gift",
+  ];
+
+  const paymentIndicators = [
+    "processing fee",
+    "registration fee",
+    "pay the fee",
+    "pay now",
+    "send money",
+    "payment required",
+    "transfer money",
+  ];
+
+  const claimIndicators = [
+    "claim",
+    "collect",
+    "receive your reward",
+    "receive your prize",
+  ];
+
+  const hasPrizeIndicator = prizeIndicators.some((word) => text.includes(word));
+
+  const hasPaymentIndicator = paymentIndicators.some((word) =>
+    text.includes(word),
+  );
+
+  const hasClaimIndicator = claimIndicators.some((word) => text.includes(word));
+
+  if (hasPrizeIndicator && hasPaymentIndicator) {
+    riskScore += 35;
+
+    detectedSignals.push("Possible advance-fee prize scam pattern detected");
+
+    evidence.push({
+      matchedText: "Prize/reward + payment request",
+      category: "Advance-Fee Scam",
+      explanation:
+        "The message combines a promised reward with a request for payment, which is a common scam pattern.",
+    });
+  }
+
+  if (hasPrizeIndicator && hasClaimIndicator && !hasPaymentIndicator) {
+    riskScore += 15;
+
+    detectedSignals.push("Prize or reward claim pattern detected");
+
+    evidence.push({
+      matchedText: "Prize/reward claim",
+      category: "Reward Scam",
+      explanation:
+        "The message encourages the user to claim a prize or reward.",
+    });
+  }
 
   const matchedRewardWords = rewardWords.filter((word) => text.includes(word));
 
