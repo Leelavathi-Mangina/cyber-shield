@@ -193,7 +193,7 @@ export default function Home() {
             onChange={(e) => setInputType(e.target.value)}
             className="mb-5 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"
           >
-            <option value="message">SMS / Message</option>
+            <option value="message">SMS / Social Media Message</option>
             <option value="email">Email</option>
             <option value="url">URL</option>
           </select>
