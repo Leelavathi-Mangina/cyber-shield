@@ -1,69 +1,185 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [content, setContent] = useState("");
+  const [inputType, setInputType] = useState("message");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleAnalyze(e) {
+    e.preventDefault();
+
+    if (!content.trim()) {
+      setError("Please enter suspicious content to analyze.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setResult(null);
+
+      const response = await fetch("http://localhost:5000/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputType,
+          content,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Analysis failed.");
+      }
+
+      setResult(data.result);
+    } catch (err) {
+      setError(err.message || "Unable to connect to Cyber Shield server.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.js
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="mx-auto max-w-4xl px-6 py-16">
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-cyan-400">
+            Team ThinkForge
+          </p>
+
+          <h1 className="text-4xl font-bold sm:text-5xl">
+            Cyber Shield
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-4 text-lg text-slate-300">
+            Detect. Understand. Stay Safe.
+          </p>
+
+          <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+            Analyze suspicious URLs, messages and emails to understand possible
+            scam indicators and receive safer next-step recommendations.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <form
+          onSubmit={handleAnalyze}
+          className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl"
+        >
+          <label className="mb-2 block font-medium">
+            Content Type
+          </label>
+
+          <select
+            value={inputType}
+            onChange={(e) => setInputType(e.target.value)}
+            className="mb-5 w-full rounded-lg border border-slate-700 bg-slate-950 p-3"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <option value="message">SMS / Message</option>
+            <option value="email">Email</option>
+            <option value="url">URL</option>
+          </select>
+
+          <label className="mb-2 block font-medium">
+            Suspicious Content
+          </label>
+
+          <textarea
+            rows="7"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Paste a suspicious message, email or URL here..."
+            className="w-full rounded-lg border border-slate-700 bg-slate-950 p-4 outline-none focus:border-cyan-500"
+          />
+
+          {error && (
+            <p className="mt-3 text-sm text-red-400">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-5 w-full rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 disabled:opacity-60"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {loading ? "Analyzing..." : "Analyze Risk"}
+          </button>
+        </form>
+
+        {result && (
+          <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-slate-400">
+                  Risk Classification
+                </p>
+
+                <h2 className="text-3xl font-bold uppercase">
+                  {result.riskLevel} Risk
+                </h2>
+              </div>
+
+              <div className="rounded-xl bg-slate-800 px-5 py-3 text-center">
+                <p className="text-sm text-slate-400">
+                  Risk Score
+                </p>
+                <p className="text-2xl font-bold">
+                  {result.riskScore}/100
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="mb-3 text-xl font-semibold">
+                Why was this flagged?
+              </h3>
+
+              {result.detectedSignals.length > 0 ? (
+                <ul className="space-y-2">
+                  {result.detectedSignals.map((signal, index) => (
+                    <li
+                      key={index}
+                      className="rounded-lg bg-slate-800 p-3 text-slate-200"
+                    >
+                      ⚠ {signal}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400">
+                  No major suspicious patterns were detected by the current
+                  analysis.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-xl font-semibold">
+                Recommended Actions
+              </h3>
+
+              <ul className="space-y-2">
+                {result.recommendations.map((item, index) => (
+                  <li
+                    key={index}
+                    className="rounded-lg bg-slate-800 p-3 text-slate-200"
+                  >
+                    ✓ {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+      </section>
+    </main>
   );
 }
