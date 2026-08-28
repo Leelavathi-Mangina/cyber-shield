@@ -514,6 +514,67 @@ export default function Home() {
       </section>
 
       <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Cyber Safety Awareness</h2>
+
+          <p className="mt-2 text-slate-400">
+            Quick guidance to help users recognize and respond to common cyber
+            threats.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-xl bg-slate-800 p-5">
+            <h3 className="text-lg font-semibold">Phishing Warning Signs</h3>
+
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              <li>• Urgent pressure to act immediately</li>
+              <li>• Requests for OTP, password, PIN or CVV</li>
+              <li>• Suspicious or shortened links</li>
+              <li>• Unexpected prizes, refunds or payment requests</li>
+              <li>• Messages pretending to be trusted organizations</li>
+            </ul>
+          </div>
+
+          <div className="rounded-xl bg-slate-800 p-5">
+            <h3 className="text-lg font-semibold">Safe Browsing Practices</h3>
+
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              <li>
+                • Open official websites directly instead of message links
+              </li>
+              <li>• Verify the sender through an official channel</li>
+              <li>• Never share OTPs or passwords</li>
+              <li>• Inspect QR-code destinations before opening them</li>
+              <li>• Report suspicious content when possible</li>
+            </ul>
+          </div>
+
+          <div className="rounded-xl bg-slate-800 p-5">
+            <h3 className="text-lg font-semibold">QR Scam Safety</h3>
+
+            <p className="mt-3 text-sm text-slate-300">
+              A QR code can hide a destination URL. Avoid scanning unknown QR
+              codes directly. Analyze the QR first and inspect the destination
+              before opening it.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-800 p-5">
+            <h3 className="text-lg font-semibold">If You Suspect Fraud</h3>
+
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              <li>• Stop interacting with the suspicious content</li>
+              <li>• Do not send money or sensitive information</li>
+              <li>• Contact the organization through official channels</li>
+              <li>• Change exposed credentials if necessary</li>
+              <li>• Preserve evidence and report the incident appropriately</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold">Recent Analyses</h2>
