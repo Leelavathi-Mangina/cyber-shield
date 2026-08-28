@@ -33,11 +33,7 @@ function analyzeUrl(rawUrl) {
   };
 
   // HTTP
-  addSignal(
-    parsed.protocol === "http:",
-    10,
-    "URL does not use HTTPS"
-  );
+  addSignal(parsed.protocol === "http:", 10, "URL does not use HTTPS");
 
   // URL shorteners
   const shorteners = [
@@ -53,7 +49,7 @@ function analyzeUrl(rawUrl) {
   addSignal(
     shorteners.includes(hostname),
     20,
-    "URL shortening service detected — final destination may be hidden"
+    "URL shortening service detected — final destination may be hidden",
   );
 
   // IP-address based URL
@@ -62,7 +58,7 @@ function analyzeUrl(rawUrl) {
   addSignal(
     ipRegex.test(hostname),
     25,
-    "IP-address based URL detected instead of a normal domain"
+    "IP-address based URL detected instead of a normal domain",
   );
 
   // Too many subdomains
@@ -71,14 +67,14 @@ function analyzeUrl(rawUrl) {
   addSignal(
     parts.length > 4,
     15,
-    "Unusually high number of subdomains detected"
+    "Unusually high number of subdomains detected",
   );
 
   // @ symbol
   addSignal(
     rawUrl.includes("@"),
     20,
-    "URL contains '@', which can be used to obscure the real destination"
+    "URL contains '@', which can be used to obscure the real destination",
   );
 
   // Excessive hyphens
@@ -87,7 +83,7 @@ function analyzeUrl(rawUrl) {
   addSignal(
     hyphenCount >= 3,
     10,
-    "Domain contains an unusual number of hyphens"
+    "Domain contains an unusual number of hyphens",
   );
 
   // Suspicious keywords
@@ -110,24 +106,71 @@ function analyzeUrl(rawUrl) {
 
   addSignal(
     suspiciousKeywords.some(
-      (word) => hostname.includes(word) || pathname.includes(word)
+      (word) => hostname.includes(word) || pathname.includes(word),
     ),
     15,
-    "Security, financial, or account-related keywords detected in the URL"
+    "Security, financial, or account-related keywords detected in the URL",
+  );
+
+  // Common brand names frequently impersonated in phishing URLs.
+  // This is a heuristic signal, not proof that a website is malicious.
+  const protectedBrands = [
+    "google",
+    "microsoft",
+    "amazon",
+    "paypal",
+    "apple",
+    "facebook",
+    "instagram",
+    "whatsapp",
+    "netflix",
+  ];
+
+  const hostnameWithoutWww = hostname.replace(/^www\./, "");
+
+  const brandImpersonation = protectedBrands.find((brand) => {
+    const containsBrand = hostnameWithoutWww.includes(brand);
+
+    if (!containsBrand) {
+      return false;
+    }
+
+    // Do not flag the obvious official root domains in this MVP.
+    const officialDomains = {
+      google: ["google.com"],
+      microsoft: ["microsoft.com"],
+      amazon: ["amazon.com", "amazon.in"],
+      paypal: ["paypal.com"],
+      apple: ["apple.com"],
+      facebook: ["facebook.com"],
+      instagram: ["instagram.com"],
+      whatsapp: ["whatsapp.com"],
+      netflix: ["netflix.com"],
+    };
+
+    return !officialDomains[brand]?.some(
+      (domain) =>
+        hostnameWithoutWww === domain ||
+        hostnameWithoutWww.endsWith(`.${domain}`),
+    );
+  });
+
+  addSignal(
+    Boolean(brandImpersonation),
+    25,
+    brandImpersonation
+      ? `Possible ${brandImpersonation} brand impersonation detected in domain`
+      : "",
   );
 
   // Very long URL
-  addSignal(
-    rawUrl.length > 120,
-    10,
-    "Unusually long URL detected"
-  );
+  addSignal(rawUrl.length > 120, 10, "Unusually long URL detected");
 
   // Encoded characters
   addSignal(
     /%[0-9a-f]{2}/i.test(rawUrl),
     5,
-    "Encoded characters detected in the URL"
+    "Encoded characters detected in the URL",
   );
 
   return {
