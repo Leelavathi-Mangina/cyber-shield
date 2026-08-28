@@ -157,6 +157,35 @@ export default function Home() {
               </div>
             )}
 
+            {result.evidence?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="mb-3 text-xl font-semibold">
+                  Detected Evidence
+                </h3>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {result.evidence.map((item, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4"
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                        {item.category}
+                      </p>
+
+                      <p className="mt-2 text-lg font-semibold text-white">
+                        “{item.matchedText}”
+                      </p>
+
+                      <p className="mt-2 text-sm text-slate-300">
+                        {item.explanation}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="mb-6">
               <h3 className="mb-3 text-xl font-semibold">
                 Why was this flagged?

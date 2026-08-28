@@ -6,12 +6,27 @@ function analyzeContent(content, inputType = "message") {
   let riskScore = 0;
   const detectedSignals = [];
   const recommendations = [];
+  const evidence = [];
   let urlIntelligence = null;
 
-  const addSignal = (condition, score, message) => {
+  const addSignal = (
+    condition,
+    score,
+    message,
+    matchedText = null,
+    category = null,
+  ) => {
     if (condition) {
       riskScore += score;
       detectedSignals.push(message);
+
+      if (matchedText) {
+        evidence.push({
+          matchedText,
+          category,
+          explanation: message,
+        });
+      }
     }
   };
 
@@ -27,11 +42,22 @@ function analyzeContent(content, inputType = "message") {
     "account blocked",
   ];
 
-  addSignal(
-    urgencyWords.some((word) => text.includes(word)),
-    15,
-    "Urgency or pressure language detected",
+  const matchedUrgencyWords = urgencyWords.filter((word) =>
+    text.includes(word),
   );
+
+  if (matchedUrgencyWords.length > 0) {
+    riskScore += 15;
+    detectedSignals.push("Urgency or pressure language detected");
+
+    matchedUrgencyWords.forEach((word) => {
+      evidence.push({
+        matchedText: word,
+        category: "Urgency",
+        explanation: "Urgency or pressure language detected",
+      });
+    });
+  }
 
   // 2. Sensitive credential requests
   const credentialWords = [
@@ -44,11 +70,22 @@ function analyzeContent(content, inputType = "message") {
     "account number",
   ];
 
-  addSignal(
-    credentialWords.some((word) => text.includes(word)),
-    30,
-    "Request for sensitive credentials detected",
+  const matchedCredentialWords = credentialWords.filter((word) =>
+    text.includes(word),
   );
+
+  if (matchedCredentialWords.length > 0) {
+    riskScore += 30;
+    detectedSignals.push("Request for sensitive credentials detected");
+
+    matchedCredentialWords.forEach((word) => {
+      evidence.push({
+        matchedText: word,
+        category: "Credentials",
+        explanation: "Request for sensitive credentials detected",
+      });
+    });
+  }
 
   // 3. Financial/payment signals
   const financialWords = [
@@ -61,11 +98,22 @@ function analyzeContent(content, inputType = "message") {
     "pay now",
   ];
 
-  addSignal(
-    financialWords.some((word) => text.includes(word)),
-    20,
-    "Financial or payment-related request detected",
+  const matchedFinancialWords = financialWords.filter((word) =>
+    text.includes(word),
   );
+
+  if (matchedFinancialWords.length > 0) {
+    riskScore += 20;
+    detectedSignals.push("Financial or payment-related request detected");
+
+    matchedFinancialWords.forEach((word) => {
+      evidence.push({
+        matchedText: word,
+        category: "Financial",
+        explanation: "Financial or payment-related request detected",
+      });
+    });
+  }
 
   // 4. Reward / prize scam language
   const rewardWords = [
@@ -77,11 +125,20 @@ function analyzeContent(content, inputType = "message") {
     "congratulations you won",
   ];
 
-  addSignal(
-    rewardWords.some((word) => text.includes(word)),
-    20,
-    "Prize or reward-based scam pattern detected",
-  );
+  const matchedRewardWords = rewardWords.filter((word) => text.includes(word));
+
+  if (matchedRewardWords.length > 0) {
+    riskScore += 20;
+    detectedSignals.push("Prize or reward-based scam pattern detected");
+
+    matchedRewardWords.forEach((word) => {
+      evidence.push({
+        matchedText: word,
+        category: "Reward",
+        explanation: "Prize or reward-based scam pattern detected",
+      });
+    });
+  }
 
   // 5. Suspicious links
   const urlRegex = /(https?:\/\/[^\s]+)/gi;
@@ -158,6 +215,7 @@ function analyzeContent(content, inputType = "message") {
     riskLevel,
     detectedSignals,
     recommendations,
+    evidence,
     urlIntelligence,
   };
 }
