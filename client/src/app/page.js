@@ -36,7 +36,7 @@ export default function Home() {
       setError("");
       setResult(null);
 
-      const response = await fetch("http://localhost:5000/api/analyze", {
+      const response = await fetch("https://cyber-shield-6hc3.onrender.com/api/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append("qrImage", qrFile);
 
-      const response = await fetch("http://localhost:5000/api/qr/analyze", {
+      const response = await fetch("https://cyber-shield-6hc3.onrender.com/api/qr/analyze", {
         method: "POST",
         body: formData,
       });
@@ -100,7 +100,7 @@ export default function Home() {
     try {
       setHistoryLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/analyses");
+      const response = await fetch("https://cyber-shield-6hc3.onrender.com/api/analyses");
 
       const data = await response.json();
 
@@ -128,7 +128,7 @@ export default function Home() {
       setReportLoading(true);
       setReportMessage("");
 
-      const response = await fetch("http://localhost:5000/api/reports", {
+      const response = await fetch("https://cyber-shield-6hc3.onrender.com/api/reports", {
         method: "POST",
 
         headers: {
